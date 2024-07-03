@@ -91,9 +91,11 @@ def validate_selling_price(self):
         last_valuation_rate_in_sales_uom = last_valuation_rate * (item.conversion_factor or 1)
 
         if flt(item.base_net_rate) < flt(last_valuation_rate_in_sales_uom):
-            throw_message(
-                item.idx, item.item_name, last_valuation_rate_in_sales_uom, "valuation rate (Moving Average)"
-            )
+            if action == "Stop":
+                if role_allowed_to_override not in frappe.get_roles():
+                    throw_message(item.idx, item.item_name, last_valuation_rate_in_sales_uom, "valuation rate (Moving Average)")
+            else:
+                show_warning_for_selling_price(item.idx, item.item_name, last_valuation_rate_in_sales_uom, "valuation rate (Moving Average)")
 
 def show_warning_for_selling_price(idx, item_name, rate, ref_rate_field):
     frappe.msgprint(
